@@ -1,0 +1,230 @@
+/* =====================================================================
+   "Tech Fluent ___" hero (Figma "Hero- GIF", node 8613:20021: a 1392 × 701
+   white card with 27px corners).
+
+   Desktop: every size is in Figma pixels × --u. --u scales the 1392 × 701
+   frame to the card's height, unless the big word (~1148u wide) would then come
+   within 48px of the card sides. The frame sits on the card's bottom edge, so
+   the chair always sits on that edge too.
+
+   All classes start with "tfh-" so nothing clashes with the site's styles.
+   ===================================================================== */
+
+.tfh {
+  /* Settings you may want to change */
+  --tfh-inset: 24px;          /* space around the card (Figma: 24) */
+  --tfh-nav-bottom: 74px;     /* where the site's fixed navbar ends (top 16 + 58 tall) */
+  --tfh-page-bg: #ffffff;     /* colour around the card */
+  --tfh-navy: #1f2a55;        /* "Tech Fluent" */
+  --tfh-sky: #5cc9ff;         /* the big word */
+
+  /* Frame aspect ratio (750 × 660) */
+  --tfh-ar: 750 / 660;
+  --tfh-ar-num: 1.13636;
+
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  padding: var(--tfh-inset) var(--tfh-inset) 32px;
+  background: var(--tfh-page-bg);
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+}
+.tfh,
+.tfh *,
+.tfh *::before,
+.tfh *::after { box-sizing: border-box; }
+
+.tfh-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tfh-card {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 27px;
+  background: #ffffff;
+  container-type: size;
+  --u: min(100cqh / 701, (100cqw - 96px) / 1148);
+}
+
+/* Design frame: centred horizontally, bottom-aligned in the card. */
+.tfh-frame {
+  position: absolute;
+  left: 50%;
+  top: calc(100cqh - 701 * var(--u));
+  width: calc(1392 * var(--u));
+  height: calc(701 * var(--u));
+  transform: translateX(-50%);
+}
+
+/* Glow background (Figma node 8613:20022). Works like background-size: cover:
+   one uniform scale (never stretched) that always fills the card, anchored to
+   the right edge where both hotspots are, centred vertically. */
+.tfh-glow {
+  --u: max(100cqw / 1392, 100cqh / 701);
+  position: absolute;
+  right: 0;
+  top: calc((100cqh - 701 * var(--u)) / 2);
+  width: calc(1392 * var(--u));
+  height: calc(701 * var(--u));
+  pointer-events: none;
+}
+.tfh-blob { position: absolute; opacity: 0.72; }
+.tfh-blob img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  margin: 0;
+}
+.tfh-blob--blue {
+  left: calc(-14.95 * var(--u));
+  top: calc(-160.98 * var(--u));
+  width: calc(1406 * var(--u));
+  height: calc(429.969 * var(--u));
+  transform: rotate(-177.7deg);
+}
+.tfh-blob--blue img { left: -12.47%; top: -40.78%; width: 124.94%; height: 181.56%; }
+.tfh-blob--yellow {
+  left: calc(-0.01 * var(--u));
+  top: calc(536.99 * var(--u));
+  width: calc(1376.002 * var(--u));
+  height: calc(596.225 * var(--u));
+  transform: scaleX(-1);
+}
+.tfh-blob--yellow img { left: -32.94%; top: -76.01%; width: 165.88%; height: 252.02%; }
+
+/* "Tech Fluent": SemiBold 60 / 78, tracking 1%, top 128. */
+.tfh-kicker {
+  position: absolute;
+  top: calc(128 * var(--u));
+  left: 0;
+  right: 0;
+  margin: 0;
+  font-weight: 600;
+  font-size: calc(60 * var(--u));
+  line-height: calc(78 * var(--u));
+  letter-spacing: 0.01em;
+  color: var(--tfh-navy);
+  text-align: center;
+}
+
+/* Big word: SemiBold 182 / 140, tracking 1%, top 206. Sits BEHIND the chair. */
+.tfh-words {
+  position: absolute;
+  top: calc(206 * var(--u));
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: grid;
+  font-weight: 600;
+  font-size: calc(182 * var(--u));
+  line-height: calc(140 * var(--u));
+  letter-spacing: 0.01em;
+  color: var(--tfh-sky);
+  user-select: none;
+}
+.tfh-word {
+  grid-area: 1 / 1;
+  justify-self: center;
+  display: inline-flex;
+  white-space: nowrap;
+  /* Masks the letters as they slide in and out. The padding gives the glyphs
+     room (they are taller than the line), the margin cancels it in layout. */
+  overflow: hidden;
+  padding: 0.25em 0.04em;
+  margin: -0.25em 0;
+}
+.tfh-ch { display: inline-block; will-change: transform; }
+
+/* Chair: 651.6 × 573.4 design px at x 371.9. 75.7% down the canvas (the shell
+   ends at ~75.8%, the leg starts at 76.4%) lands exactly on the card's bottom
+   edge, and the card cuts everything below: no leg, base or shadow. */
+.tfh-chair {
+  --seat: 0.757;
+  position: absolute;
+  z-index: 2;
+  left: calc(371.875 * var(--u));
+  top: calc((701 - 573.375 * var(--seat)) * var(--u));
+  width: calc(651.5625 * var(--u));
+  aspect-ratio: var(--tfh-ar);
+}
+.tfh-chair canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+/* =====================================================================
+   Phones, tablets and near-square screens (aspect ratio 3:2 or narrower):
+   no Figma frame for these, so the pieces stack in a column and the chair
+   uses the height. In frames 0–78 the kids fill only 17.6%–79.3% of the
+   canvas width, so at the 150cqw cap they still fit inside the card.
+   ===================================================================== */
+@media (max-aspect-ratio: 3/2) {
+  .tfh-frame {
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Room under the navbar and under the shell, so nothing touches an edge. */
+    --pad: calc(var(--tfh-nav-bottom) - var(--tfh-inset) + max(24px, 3cqh));
+    --pad-b: max(24px, 4cqh);
+    padding-top: var(--pad);
+    padding-bottom: var(--pad-b);
+    /* "Generations" is ~6.3em wide: 14cqw leaves ~6% of the card on each side. */
+    --word-size: min(14cqw, 182px);
+    --kicker-size: clamp(22px, calc(var(--word-size) * 0.45), 60px);
+    --overlap: 0.62; /* how far the head goes up into the word, × word size */
+    --kicker-gap: 0px;
+    --chair-w: min(150cqw, calc((100cqh - var(--pad) - var(--pad-b) - var(--kicker-size) * 1.3 - var(--kicker-gap)
+                - var(--word-size) * 0.77 + var(--word-size) * var(--overlap)) / 0.765 * var(--tfh-ar-num)));
+  }
+  .tfh-kicker,
+  .tfh-words,
+  .tfh-chair { position: relative; top: auto; left: auto; right: auto; flex: none; }
+  .tfh-kicker { font-size: var(--kicker-size); line-height: 1.3; margin-bottom: var(--kicker-gap); }
+  .tfh-words { font-size: var(--word-size); line-height: 0.77; }
+  .tfh-chair {
+    width: var(--chair-w);
+    margin-top: calc(var(--word-size) * var(--overlap) * -1);
+    /* The kids sit at 48.5% of the canvas: nudge them onto the centre line. */
+    transform: translateX(1.5%);
+    /* Only the visible 76.5% takes up layout space. */
+    margin-bottom: calc(var(--chair-w) / var(--tfh-ar-num) * -0.235);
+  }
+  /* The chair floats above the card edge here, so cut the frame under the shell. */
+  .tfh-chair canvas {
+    -webkit-mask-image: linear-gradient(to bottom, #000 74.5%, transparent 76.5%);
+    mask-image: linear-gradient(to bottom, #000 74.5%, transparent 76.5%);
+  }
+}
+
+/* Phones: the word is too small to read with the head over it, so the kid
+   starts ~14px under the letters, and "Tech Fluent" gets ~12px above the word. */
+@media (max-width: 640px) and (max-aspect-ratio: 3/2) {
+  .tfh-frame {
+    --overlap: 0.1;
+    --kicker-gap: calc(var(--word-size) * 0.18);
+  }
+}
+
+@media (max-width: 640px) {
+  .tfh { --tfh-inset: 12px; padding-bottom: var(--tfh-inset); }
+  .tfh-card { border-radius: 24px; }
+}

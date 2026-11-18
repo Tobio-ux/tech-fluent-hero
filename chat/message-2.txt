@@ -1,0 +1,400 @@
+Create these 3 files for a new hero component. Copy every file character for character. Do not edit, reformat, rename, split or "improve" them.
+Don't use them anywhere yet; the main component comes in my next message.
+
+### src/components/tech-fluent-hero/frame-sequence.ts
+
+```ts
+/**
+ * Draws the spinning-chair frames on a <canvas>, reading them from a few
+ * sprite sheets (transparent WebP). Each sheet holds cols × rows frames, left
+ * to right, top to bottom:
+ *
+ *   sheets/lg-0.webp = frames 0–19, lg-1 = 20–39, lg-2 = 40–59, lg-3 = 60–78
+ *   (sm-0 … sm-3: the same frames, smaller)
+ *
+ *   const seq = createFrameSequence(canvas, SHEETS, { lastFrame: 78 });
+ *   seq.show(42);    // draws frame 42 (or the nearest frame whose sheet has loaded)
+ *   seq.destroy();   // stops drawing and observing (call on unmount)
+ *
+ * The sheet with the first frame loads first; until a sheet arrives, the
+ * nearest loaded frame is shown instead.
+ */
+
+export type SheetManifest = {
+  /** URL folder that holds the sheets, e.g. "/tech-fluent-hero/sheets". */
+  base: string;
+  /** Number of frames across all sheets (frames 0 … count-1). */
+  count: number;
+  cols: number;
+  rows: number;
+  /** Size of one frame in each set. */
+  sets: { lg: { width: number; height: number }; sm: { width: number; height: number } };
+};
+
+export type FrameSequence = {
+  readonly last: number;
+  readonly set: "lg" | "sm";
+  show(frame: number): void;
+  destroy(): void;
+};
+
+type Options = {
+  lastFrame?: number;
+  onProgress?: (loadedSheets: number, totalSheets: number) => void;
+};
+
+export function createFrameSequence(
+  canvas: HTMLCanvasElement,
+  M: SheetManifest,
+  opts: Options = {},
+): FrameSequence {
+  const ctx = canvas.getContext("2d");
+  const LAST = Math.max(0, Math.min(M.count - 1, opts.lastFrame ?? M.count - 1));
+  const PER = M.cols * M.rows;
+  const SHEETS = Math.floor(LAST / PER) + 1; // sheets after the last frame aren't loaded
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+  // Small frames on Save-Data or when the canvas is small, large ones otherwise.
+  const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+  const saveData = Boolean(connection?.saveData);
+  const neededWidth = canvas.getBoundingClientRect().width * dpr;
+  const set: "lg" | "sm" = saveData || neededWidth <= M.sets.sm.width * 1.1 ? "sm" : "lg";
+
+  const sheets: (HTMLImageElement | undefined)[] = new Array(SHEETS);
+  let current = 0;
+  let drawnKey = "";
+  let destroyed = false;
+  let loaded = 0;
+
+  // Load the first sheet before the others so the opening frame shows quickly.
+  const loadSheet = (s: number) =>
+    new Promise<void>((resolve) => {
+      const img = new Image();
+      img.decoding = "async";
+      if (s === 0) (img as HTMLImageElement & { fetchPriority?: string }).fetchPriority = "high";
+      img.onload = () => {
+        if (!destroyed) {
+          sheets[s] = img;
+          loaded += 1;
+          opts.onProgress?.(loaded, SHEETS);
+          draw();
+        }
+        resolve();
+      };
+      img.onerror = () => resolve();
+      img.src = `${M.base}/${set}-${s}.webp`;
+    });
+  void loadSheet(0).then(() => {
+    for (let s = 1; s < SHEETS && !destroyed; s += 1) void loadSheet(s);
+  });
+
+  const sheetOf = (i: number) => Math.floor(i / PER);
+
+  /** Nearest frame to i whose sheet has loaded, or -1. */
+  function nearestLoaded(i: number) {
+    if (sheets[sheetOf(i)]) return i;
+    for (let d = 1; d <= LAST; d += 1) {
+      if (i - d >= 0 && sheets[sheetOf(i - d)]) return i - d;
+      if (i + d <= LAST && sheets[sheetOf(i + d)]) return i + d;
+    }
+    return -1;
+  }
+
+  function draw(force = false) {
+    if (!ctx || destroyed) return;
+    const f = nearestLoaded(current);
+    if (f < 0) return;
+    const key = `${f}`;
+    if (key === drawnKey && !force) return;
+    const img = sheets[sheetOf(f)] as HTMLImageElement;
+    const cell = f % PER;
+    const w = img.naturalWidth / M.cols;
+    const h = img.naturalHeight / M.rows;
+    const sx = (cell % M.cols) * w;
+    const sy = Math.floor(cell / M.cols) * h;
+    drawnKey = key;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, sx, sy, w, h, 0, 0, canvas.width, canvas.height);
+  }
+
+  function fit() {
+    if (!ctx || destroyed) return;
+    const r = canvas.getBoundingClientRect();
+    const w = Math.max(1, Math.round(r.width * dpr));
+    const h = Math.max(1, Math.round(r.height * dpr));
+    if (canvas.width === w && canvas.height === h) return;
+    canvas.width = w;
+    canvas.height = h;
+    ctx.imageSmoothingQuality = "high";
+    draw(true);
+  }
+
+  const ro = new ResizeObserver(fit);
+  ro.observe(canvas);
+  fit();
+
+  return {
+    last: LAST,
+    set,
+    show(frame: number) {
+      current = Math.max(0, Math.min(LAST, Math.round(frame)));
+      draw();
+    },
+    destroy() {
+      destroyed = true;
+      ro.disconnect();
+      sheets.length = 0;
+      drawnKey = "";
+    },
+  };
+}
+```
+
+### src/components/tech-fluent-hero/glows.ts
+
+```ts
+/**
+ * The two background glows from Figma (node 8613:20022), as inline SVG data
+ * URIs so there are no extra files to upload. Source: assets/hero/glow-*.svg.
+ */
+export const GLOW_BLUE =
+  "data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjE3NTYuNjYiIGhlaWdodD0iNzgwLjYyOSIgdmlld0JveD0iMCAwIDE3NTYuNjYgNzgwLjYyOSIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9IkJsdWUiIGZpbHRlcj0idXJsKCNmaWx0ZXIwX2ZfODYxM185MzMzNSkiPgo8cGF0aCBpZD0iVmVjdG9yIDQ0MzUiIGQ9Ik00MDAuOTExIDE5Mi43NjdDMzAyLjIyIDEzOS41NDkgMjMxLjMzNCAyMjAuNzUzIDIwOC4yMjggMjY4LjAwN1YzOTEuNDE5QzIwOC4yMjggNDAyLjg4OCAxODcuMDggNDc3LjY2OSAyMDguMjI4IDUwNi4xMTNDMjI5LjM3NiA1MzQuNTU4IDQ2NS41MyA1NTAuMTU2IDU1My42NDcgNTU5Ljc5MUM2NDEuNzY1IDU2OS40MjUgOTYzLjY4NiA1NDcuNDA0IDExMjcgNTM3LjMxQzEyOTAuMzEgNTI3LjIxNyAxNDkwLjA0IDQ5MS44OTEgMTU0NC4wOSA0NTkuMzE4QzE1OTguMTMgNDI2Ljc0NSAxNTk0LjYxIDM5MS40MTkgMTUyNS4yOSAzNTguODQ1QzE0NTUuOTcgMzI2LjI3MiAxMzkxLjM1IDM0My4yNDcgMTIyMC45OSAzNTguODQ1QzEwNTAuNjMgMzc0LjQ0NCA5MTUuNTE2IDQwNC4yNjUgNjk4LjE2IDM3OS45NDlDNDgwLjgwNCAzNTUuNjM0IDUyNC4yNzUgMjU5LjI5IDQwMC45MTEgMTkyLjc2N1oiIGZpbGw9IiNFN0Y2RkYiLz4KPHBhdGggaWQ9IlZlY3RvciA0NDM0IiBkPSJNMzc3LjQxMiAyMzUuODkyQzI3OC43MjEgMTgyLjY3NCAyMDcuODM2IDI2My44NzggMTg0LjcyOSAzMTEuMTMyVjQzNC41NDRDMTg0LjcyOSA0NDYuMDEzIDE2My41ODEgNTIwLjc5NCAxODQuNzI5IDU0OS4yMzhDMjA1Ljg3OCA1NzcuNjgzIDQ0Mi4wMzIgNTkzLjI4MSA1MzAuMTQ5IDYwMi45MTZDNjE4LjI2NiA2MTIuNTUgOTQwLjE4OCA1OTAuNTI5IDExMDMuNSA1ODAuNDM1QzEyNjYuODEgNTcwLjM0MiAxNDY2LjU0IDUzNS4wMTYgMTUyMC41OSA1MDIuNDQzQzE1NzQuNjMgNDY5Ljg3IDE1NzEuMTEgNDM0LjU0NCAxNTAxLjc5IDQwMS45N0MxNDMyLjQ3IDM2OS4zOTcgMTM2Ny44NSAzODYuMzcyIDExOTcuNDkgNDAxLjk3QzEwMjcuMTMgNDE3LjU2OSA4OTIuMDE3IDQ0Ny4zOSA2NzQuNjYxIDQyMy4wNzRDNDU3LjMwNSAzOTguNzU5IDUwMC43NzcgMzAyLjQxNSAzNzcuNDEyIDIzNS44OTJaIiBmaWxsPSIjQjNFMEZGIi8+CjwvZz4KPGRlZnM+CjxmaWx0ZXIgaWQ9ImZpbHRlcjBfZl84NjEzXzkzMzM1IiB4PSI1LjcyMTIzZS0wNiIgeT0iMi4yNzg0M2UtMDYiIHdpZHRoPSIxNzU2LjY2IiBoZWlnaHQ9Ijc4MC42MjkiIGZpbHRlclVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY29sb3ItaW50ZXJwb2xhdGlvbi1maWx0ZXJzPSJzUkdCIj4KPGZlRmxvb2QgZmxvb2Qtb3BhY2l0eT0iMCIgcmVzdWx0PSJCYWNrZ3JvdW5kSW1hZ2VGaXgiLz4KPGZlQmxlbmQgbW9kZT0ibm9ybWFsIiBpbj0iU291cmNlR3JhcGhpYyIgaW4yPSJCYWNrZ3JvdW5kSW1hZ2VGaXgiIHJlc3VsdD0ic2hhcGUiLz4KPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iODcuNjY1MSIgcmVzdWx0PSJlZmZlY3QxX2ZvcmVncm91bmRCbHVyXzg2MTNfOTMzMzUiLz4KPC9maWx0ZXI+CjwvZGVmcz4KPC9zdmc+Cg==";
+
+export const GLOW_YELLOW =
+  "data:image/svg+xml;base64,PHN2ZyBwcmVzZXJ2ZUFzcGVjdFJhdGlvPSJub25lIiBvdmVyZmxvdz0idmlzaWJsZSIgc3R5bGU9ImRpc3BsYXk6IGJsb2NrOyIgd2lkdGg9IjIyODIuNDQiIGhlaWdodD0iMTUwMi42NiIgdmlld0JveD0iMCAwIDIyODIuNDQgMTUwMi42NiIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPGcgaWQ9IlllbGxvdyIgb3BhY2l0eT0iMC44MiIgZmlsdGVyPSJ1cmwoI2ZpbHRlcjBfZl84NjEzXzkzMzE3KSI+CjxwYXRoIGlkPSJWZWN0b3IgNDQzNSIgZD0iTTY3My45ODggNDc3LjM5OEM1NzcuNDAyIDQwMy42MDIgNTA4LjAyOSA1MTYuMjA1IDQ4NS40MTYgNTgxLjczMVY3NTIuODYyQzQ4NS40MTYgNzY4Ljc2NiA0NjQuNzE5IDg3Mi40NjMgNDg1LjQxNiA5MTEuOTA2QzUwNi4xMTMgOTUxLjM0OCA3MzcuMjI4IDk3Mi45NzggODIzLjQ2NSA5ODYuMzM4QzkwOS43MDMgOTk5LjY5OCAxMjI0Ljc2IDk2OS4xNjEgMTM4NC41OCA5NTUuMTY1QzE1NDQuNDEgOTQxLjE3IDE3MzkuODggODkyLjE4NCAxNzkyLjc3IDg0Ny4wMTZDMTg0NS42NiA4MDEuODQ3IDE4NDIuMjEgNzUyLjg2MiAxNzc0LjM3IDcwNy42OTRDMTcwNi41MyA2NjIuNTI1IDE2NDMuMjkgNjg2LjA2NCAxNDc2LjU3IDcwNy42OTRDMTMwOS44NCA3MjkuMzI0IDExNzcuNjEgNzcwLjY3NSA5NjQuODk0IDczNi45NThDNzUyLjE3NiA3MDMuMjQgNzk0LjcyIDU2OS42NDQgNjczLjk4OCA0NzcuMzk4WiIgZmlsbD0iI0ZGRjFDMyIvPgo8cGF0aCBpZD0iVmVjdG9yIDQ0MzQiIGQ9Ik02NTAuOTkgNTM3LjE5OUM1NTQuNDA0IDQ2My40MDMgNDg1LjAzMSA1NzYuMDA2IDQ2Mi40MTggNjQxLjUzMlY4MTIuNjYzQzQ2Mi40MTggODI4LjU2NyA0NDEuNzIxIDkzMi4yNjQgNDYyLjQxOCA5NzEuNzA2QzQ4My4xMTQgMTAxMS4xNSA3MTQuMjMgMTAzMi43OCA4MDAuNDY3IDEwNDYuMTRDODg2LjcwNSAxMDU5LjUgMTIwMS43NiAxMDI4Ljk2IDEzNjEuNTggMTAxNC45N0MxNTIxLjQxIDEwMDAuOTcgMTcxNi44OCA5NTEuOTg1IDE3NjkuNzcgOTA2LjgxN0MxODIyLjY3IDg2MS42NDggMTgxOS4yMiA4MTIuNjYzIDE3NTEuMzggNzY3LjQ5NEMxNjgzLjU0IDcyMi4zMjYgMTYyMC4zIDc0NS44NjQgMTQ1My41NyA3NjcuNDk0QzEyODYuODUgNzg5LjEyNCAxMTU0LjYxIDgzMC40NzYgOTQxLjg5NiA3OTYuNzU4QzcyOS4xNzggNzYzLjA0MSA3NzEuNzIyIDYyOS40NDQgNjUwLjk5IDUzNy4xOTlaIiBmaWxsPSIjRkZFQTdGIi8+CjwvZz4KPGRlZnM+CjxmaWx0ZXIgaWQ9ImZpbHRlcjBfZl84NjEzXzkzMzE3IiB4PSIwIiB5PSItOS41MDgxOGUtMDciIHdpZHRoPSIyMjgyLjQ0IiBoZWlnaHQ9IjE1MDIuNjYiIGZpbHRlclVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgY29sb3ItaW50ZXJwb2xhdGlvbi1maWx0ZXJzPSJzUkdCIj4KPGZlRmxvb2QgZmxvb2Qtb3BhY2l0eT0iMCIgcmVzdWx0PSJCYWNrZ3JvdW5kSW1hZ2VGaXgiLz4KPGZlQmxlbmQgbW9kZT0ibm9ybWFsIiBpbj0iU291cmNlR3JhcGhpYyIgaW4yPSJCYWNrZ3JvdW5kSW1hZ2VGaXgiIHJlc3VsdD0ic2hhcGUiLz4KPGZlR2F1c3NpYW5CbHVyIHN0ZERldmlhdGlvbj0iMjI2LjYwOSIgcmVzdWx0PSJlZmZlY3QxX2ZvcmVncm91bmRCbHVyXzg2MTNfOTMzMTciLz4KPC9maWx0ZXI+CjwvZGVmcz4KPC9zdmc+Cg==";
+```
+
+### src/components/tech-fluent-hero/tech-fluent-hero.css
+
+```css
+/* =====================================================================
+   "Tech Fluent ___" hero (Figma "Hero- GIF", node 8613:20021: a 1392 × 701
+   white card with 27px corners).
+
+   Desktop: every size is in Figma pixels × --u. --u scales the 1392 × 701
+   frame to the card's height, unless the big word (~1148u wide) would then come
+   within 48px of the card sides. The frame sits on the card's bottom edge, so
+   the chair always sits on that edge too.
+
+   All classes start with "tfh-" so nothing clashes with the site's styles.
+   ===================================================================== */
+
+.tfh {
+  /* Settings you may want to change */
+  --tfh-inset: 24px;          /* space around the card (Figma: 24) */
+  --tfh-nav-bottom: 74px;     /* where the site's fixed navbar ends (top 16 + 58 tall) */
+  --tfh-page-bg: #ffffff;     /* colour around the card */
+  --tfh-navy: #1f2a55;        /* "Tech Fluent" */
+  --tfh-sky: #5cc9ff;         /* the big word */
+
+  /* Frame aspect ratio (750 × 660) */
+  --tfh-ar: 750 / 660;
+  --tfh-ar-num: 1.13636;
+
+  position: relative;
+  height: 100vh;
+  height: 100svh;
+  padding: var(--tfh-inset) var(--tfh-inset) 32px;
+  background: var(--tfh-page-bg);
+  font-family: inherit;
+  -webkit-font-smoothing: antialiased;
+}
+.tfh,
+.tfh *,
+.tfh *::before,
+.tfh *::after { box-sizing: border-box; }
+
+.tfh-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.tfh-card {
+  position: relative;
+  height: 100%;
+  overflow: hidden;
+  border-radius: 27px;
+  background: #ffffff;
+  container-type: size;
+  --u: min(100cqh / 701, (100cqw - 96px) / 1148);
+}
+
+/* Design frame: centred horizontally, bottom-aligned in the card. */
+.tfh-frame {
+  position: absolute;
+  left: 50%;
+  top: calc(100cqh - 701 * var(--u));
+  width: calc(1392 * var(--u));
+  height: calc(701 * var(--u));
+  transform: translateX(-50%);
+}
+
+/* Glow background (Figma node 8613:20022). Works like background-size: cover:
+   one uniform scale (never stretched) that always fills the card, anchored to
+   the right edge where both hotspots are, centred vertically. */
+.tfh-glow {
+  --u: max(100cqw / 1392, 100cqh / 701);
+  position: absolute;
+  right: 0;
+  top: calc((100cqh - 701 * var(--u)) / 2);
+  width: calc(1392 * var(--u));
+  height: calc(701 * var(--u));
+  pointer-events: none;
+}
+.tfh-blob { position: absolute; opacity: 0.72; }
+.tfh-blob img {
+  position: absolute;
+  display: block;
+  max-width: none;
+  margin: 0;
+}
+.tfh-blob--blue {
+  left: calc(-14.95 * var(--u));
+  top: calc(-160.98 * var(--u));
+  width: calc(1406 * var(--u));
+  height: calc(429.969 * var(--u));
+  transform: rotate(-177.7deg);
+}
+.tfh-blob--blue img { left: -12.47%; top: -40.78%; width: 124.94%; height: 181.56%; }
+.tfh-blob--yellow {
+  left: calc(-0.01 * var(--u));
+  top: calc(536.99 * var(--u));
+  width: calc(1376.002 * var(--u));
+  height: calc(596.225 * var(--u));
+  transform: scaleX(-1);
+}
+.tfh-blob--yellow img { left: -32.94%; top: -76.01%; width: 165.88%; height: 252.02%; }
+
+/* "Tech Fluent": SemiBold 60 / 78, tracking 1%, top 128. */
+.tfh-kicker {
+  position: absolute;
+  top: calc(128 * var(--u));
+  left: 0;
+  right: 0;
+  margin: 0;
+  font-weight: 600;
+  font-size: calc(60 * var(--u));
+  line-height: calc(78 * var(--u));
+  letter-spacing: 0.01em;
+  color: var(--tfh-navy);
+  text-align: center;
+}
+
+/* Big word: SemiBold 182 / 140, tracking 1%, top 206. Sits BEHIND the chair. */
+.tfh-words {
+  position: absolute;
+  top: calc(206 * var(--u));
+  left: 0;
+  right: 0;
+  z-index: 1;
+  display: grid;
+  font-weight: 600;
+  font-size: calc(182 * var(--u));
+  line-height: calc(140 * var(--u));
+  letter-spacing: 0.01em;
+  color: var(--tfh-sky);
+  user-select: none;
+}
+.tfh-word {
+  grid-area: 1 / 1;
+  justify-self: center;
+  display: inline-flex;
+  white-space: nowrap;
+  /* Masks the letters as they slide in and out. The padding gives the glyphs
+     room (they are taller than the line), the margin cancels it in layout. */
+  overflow: hidden;
+  padding: 0.25em 0.04em;
+  margin: -0.25em 0;
+}
+.tfh-ch { display: inline-block; will-change: transform; }
+
+/* Chair: 651.6 × 573.4 design px at x 371.9. 75.7% down the canvas (the shell
+   ends at ~75.8%, the leg starts at 76.4%) lands exactly on the card's bottom
+   edge, and the card cuts everything below: no leg, base or shadow. */
+.tfh-chair {
+  --seat: 0.757;
+  position: absolute;
+  z-index: 2;
+  left: calc(371.875 * var(--u));
+  top: calc((701 - 573.375 * var(--seat)) * var(--u));
+  width: calc(651.5625 * var(--u));
+  aspect-ratio: var(--tfh-ar);
+}
+.tfh-chair canvas {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+}
+
+/* =====================================================================
+   Phones, tablets and near-square screens (aspect ratio 3:2 or narrower):
+   no Figma frame for these, so the pieces stack in a column and the chair
+   uses the height. In frames 0–78 the kids fill only 17.6%–79.3% of the
+   canvas width, so at the 150cqw cap they still fit inside the card.
+   ===================================================================== */
+@media (max-aspect-ratio: 3/2) {
+  .tfh-frame {
+    top: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    /* Room under the navbar and under the shell, so nothing touches an edge. */
+    --pad: calc(var(--tfh-nav-bottom) - var(--tfh-inset) + max(24px, 3cqh));
+    --pad-b: max(24px, 4cqh);
+    padding-top: var(--pad);
+    padding-bottom: var(--pad-b);
+    /* "Generations" is ~6.3em wide: 14cqw leaves ~6% of the card on each side. */
+    --word-size: min(14cqw, 182px);
+    --kicker-size: clamp(22px, calc(var(--word-size) * 0.45), 60px);
+    --overlap: 0.62; /* how far the head goes up into the word, × word size */
+    --kicker-gap: 0px;
+    --chair-w: min(150cqw, calc((100cqh - var(--pad) - var(--pad-b) - var(--kicker-size) * 1.3 - var(--kicker-gap)
+                - var(--word-size) * 0.77 + var(--word-size) * var(--overlap)) / 0.765 * var(--tfh-ar-num)));
+  }
+  .tfh-kicker,
+  .tfh-words,
+  .tfh-chair { position: relative; top: auto; left: auto; right: auto; flex: none; }
+  .tfh-kicker { font-size: var(--kicker-size); line-height: 1.3; margin-bottom: var(--kicker-gap); }
+  .tfh-words { font-size: var(--word-size); line-height: 0.77; }
+  .tfh-chair {
+    width: var(--chair-w);
+    margin-top: calc(var(--word-size) * var(--overlap) * -1);
+    /* The kids sit at 48.5% of the canvas: nudge them onto the centre line. */
+    transform: translateX(1.5%);
+    /* Only the visible 76.5% takes up layout space. */
+    margin-bottom: calc(var(--chair-w) / var(--tfh-ar-num) * -0.235);
+  }
+  /* The chair floats above the card edge here, so cut the frame under the shell. */
+  .tfh-chair canvas {
+    -webkit-mask-image: linear-gradient(to bottom, #000 74.5%, transparent 76.5%);
+    mask-image: linear-gradient(to bottom, #000 74.5%, transparent 76.5%);
+  }
+}
+
+/* Phones: the word is too small to read with the head over it, so the kid
+   starts ~14px under the letters, and "Tech Fluent" gets ~12px above the word. */
+@media (max-width: 640px) and (max-aspect-ratio: 3/2) {
+  .tfh-frame {
+    --overlap: 0.1;
+    --kicker-gap: calc(var(--word-size) * 0.18);
+  }
+}
+
+@media (max-width: 640px) {
+  .tfh { --tfh-inset: 12px; padding-bottom: var(--tfh-inset); }
+  .tfh-card { border-radius: 24px; }
+}
+```
