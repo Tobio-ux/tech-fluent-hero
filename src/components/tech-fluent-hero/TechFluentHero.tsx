@@ -6,8 +6,8 @@
  * away and a new kid sits down. When scrolling stops it settles on the nearest
  * kid facing the camera.
  *
- * Needs: gsap + @gsap/react, and the 8 sprite sheets in public/tech-fluent-hero/sheets/
- * (lg-0…3.webp, sm-0…3.webp).
+ * Needs: gsap + @gsap/react, and the images in public/tech-fluent-hero/ (8 sprite
+ * sheets + 2 glows). They can also load from a CDN: see the assetsBase prop.
  * The page font (Somar Rounded) is inherited from the site.
  */
 import { useId, useRef } from "react";
@@ -15,7 +15,6 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { createFrameSequence, type SheetManifest } from "./frame-sequence";
-import { GLOW_BLUE, GLOW_YELLOW } from "./glows";
 import "./tech-fluent-hero.css";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -55,7 +54,11 @@ type Props = {
   words?: HeroWord[];
   /** Last frame of the sequence (78 = the second kid facing the camera). */
   endFrame?: number;
-  /** Where public/tech-fluent-hero/ is served from (change if you host the sheets on a CDN). */
+  /**
+   * Folder that holds sheets/ and the glow SVGs. Default: the project's own
+   * public/tech-fluent-hero/. Or the GitHub copy through jsDelivr:
+   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.0.0/public/tech-fluent-hero"
+   */
   assetsBase?: string;
   /** Screen-reader description of the animation. */
   imageLabel?: string;
@@ -210,10 +213,10 @@ export default function TechFluentHero({
         <div className="tfh-card">
           <div className="tfh-glow" aria-hidden="true">
             <div className="tfh-blob tfh-blob--blue">
-              <img src={GLOW_BLUE} alt="" />
+              <img src={`${assetsBase}/glow-blue.svg`} alt="" />
             </div>
             <div className="tfh-blob tfh-blob--yellow">
-              <img src={GLOW_YELLOW} alt="" />
+              <img src={`${assetsBase}/glow-yellow.svg`} alt="" />
             </div>
           </div>
 

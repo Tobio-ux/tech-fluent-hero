@@ -1,7 +1,0 @@
-I attached 8 images (sprite sheets for an animation).
-
-Save them, unchanged, in public/tech-fluent-hero/sheets/ with exactly these file names:
-lg-0.webp, lg-1.webp, lg-2.webp, lg-3.webp, sm-0.webp, sm-1.webp, sm-2.webp, sm-3.webp
-
-Do not convert, resize, compress or rename them, and do not use them anywhere yet.
-When you're done, list the files in public/tech-fluent-hero/sheets/ so I can check them.
