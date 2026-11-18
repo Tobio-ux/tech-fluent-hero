@@ -3,8 +3,8 @@
    white card with 27px corners).
 
    Desktop: every size is in Figma pixels × --u. --u scales the 1392 × 701
-   frame to the card's height, unless the big word (~1148u wide) would then come
-   within 48px of the card sides. The frame sits on the card's bottom edge, so
+   frame to the card's height, unless the big word (182u × its width in em)
+   would then come within 48px of the card sides. The frame sits on the card's bottom edge, so
    the chair always sits on that edge too.
 
    All classes start with "tfh-" so nothing clashes with the site's styles.
@@ -17,6 +17,10 @@
   --tfh-page-bg: #ffffff;     /* colour around the card */
   --tfh-navy: #1f2a55;        /* "Tech Fluent" */
   --tfh-sky: #5cc9ff;         /* the big word */
+
+  /* Width of the widest big word, in em. The component measures it; 6.307 is
+     "Generations" in Somar Rounded SemiBold. */
+  --tfh-word-em: 6.307;
 
   /* Frame aspect ratio (750 × 660) */
   --tfh-ar: 750 / 660;
@@ -34,6 +38,17 @@
 .tfh *,
 .tfh *::before,
 .tfh *::after { box-sizing: border-box; }
+
+/* Sticky mode (set by the component): the wrapper is one screen plus one screen
+   of scrolling per word, and the hero sticks to the top while it scrolls past. */
+.tfh-wrap--sticky {
+  height: calc(100vh + var(--tfh-steps, 2) * 100vh);
+  height: calc(100svh + var(--tfh-steps, 2) * 100vh);
+}
+.tfh-wrap--sticky > .tfh {
+  position: sticky;
+  top: 0;
+}
 
 .tfh-sr-only {
   position: absolute;
@@ -54,7 +69,7 @@
   border-radius: 27px;
   background: #ffffff;
   container-type: size;
-  --u: min(100cqh / 701, (100cqw - 96px) / 1148);
+  --u: min(100cqh / 701, (100cqw - 96px) / (182 * var(--tfh-word-em)));
 }
 
 /* Design frame: centred horizontally, bottom-aligned in the card. */
@@ -144,7 +159,17 @@
   padding: 0.25em 0.04em;
   margin: -0.25em 0;
 }
-.tfh-ch { display: inline-block; will-change: transform; }
+.tfh-ch { display: inline-block; white-space: pre; will-change: transform; }
+/* Arabic: whole words slide (letters must stay joined), no letter spacing, and a
+   taller mask for the alef/hamza above and the descenders below. */
+.tfh-word--joined {
+  letter-spacing: 0;
+  padding: 0.4em 0.04em;
+  margin: -0.4em 0;
+}
+/* Arabic letters rise higher than Latin capitals: lift the small line to keep
+   them apart. */
+.tfh--joined .tfh-kicker { top: calc(64 * var(--u)); }
 
 /* Chair: 651.6 × 573.4 design px at x 371.9. 75.7% down the canvas (the shell
    ends at ~75.8%, the leg starts at 76.4%) lands exactly on the card's bottom
@@ -187,8 +212,9 @@
     --pad-b: max(24px, 4cqh);
     padding-top: var(--pad);
     padding-bottom: var(--pad-b);
-    /* "Generations" is ~6.3em wide: 14cqw leaves ~6% of the card on each side. */
-    --word-size: min(14cqw, 182px);
+    /* The widest word fills 88% of the card ("Generations", 6.3em, gets 14cqw),
+       up to 22cqw and 182px so short words don't become huge. */
+    --word-size: min(calc(88cqw / var(--tfh-word-em)), 22cqw, 182px);
     --kicker-size: clamp(22px, calc(var(--word-size) * 0.45), 60px);
     --overlap: 0.62; /* how far the head goes up into the word, × word size */
     --kicker-gap: 0px;
@@ -222,6 +248,20 @@
     --overlap: 0.1;
     --kicker-gap: calc(var(--word-size) * 0.18);
   }
+}
+
+/* Arabic in the stacked layout: alef/hamza rise ~0.3em above the big word's line,
+   and the small line's descenders (ي, ج) drop ~0.7em below its own, so leave room
+   for both. On phones the kid also sits lower, clear of the word's descenders. */
+@media (max-aspect-ratio: 3/2) {
+  .tfh--joined .tfh-frame {
+    --kicker-gap: calc(var(--word-size) * 0.45 + var(--kicker-size) * 0.9);
+    /* Arabic words are short, so the head would hide a bigger share of them. */
+    --overlap: 0.35;
+  }
+}
+@media (max-width: 640px) and (max-aspect-ratio: 3/2) {
+  .tfh--joined .tfh-frame { --overlap: -0.15; }
 }
 
 @media (max-width: 640px) {

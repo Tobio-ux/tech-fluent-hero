@@ -3,26 +3,50 @@
 A React version of `v2.html`'s hero (the card, glows, big word and spinning chair), for the Lovable project behind `ischool-new.lovable.app`.
 The site's own navbar stays as it is. The hero leaves room for it.
 
-Repository: https://github.com/Tobio-ux/tech-fluent-hero (version `v1.0.0`)
+Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.1.0`)
 
-## Add it in Lovable (one message)
+## Update Lovable to v1.1.0 (one message)
 
-Paste `chat/lovable-from-github.txt` into the Lovable chat. It tells Lovable to do four things:
+Paste `chat/update-from-github.txt` into the Lovable chat. It tells Lovable to do four things:
 
-1. Install `gsap` and `@gsap/react`.
-2. Fetch the 3 component files from this repository (pinned to `v1.0.0`) into `src/components/tech-fluent-hero/`.
-3. Replace the home page hero with `<TechFluentHero assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.0.0/public/tech-fluent-hero" />`.
-4. Report each file's line count, to check nothing was cut off: TechFluentHero.tsx 248, frame-sequence.ts 144, tech-fluent-hero.css 230.
+1. Replace the 3 component files with the `v1.1.0` versions from GitHub.
+2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.0/public/tech-fluent-hero`.
+3. Remove any space above the hero, and any `overflow-hidden`, `transform` or `filter` on elements around it.
+4. Report each file's line count: TechFluentHero.tsx 347, frame-sequence.ts 144, tech-fluent-hero.css 270.
 
-The images (8 sprite sheets and 2 glows) stay in this repository and load through jsDelivr, so nothing is uploaded to Lovable.
+**If Lovable can't open the links**, send `chat/update-fallback-1.txt`, wait for it to finish, then send `chat/update-fallback-2.txt`.
 
-**If Lovable can't open the links**, send `chat/fallback-1.txt`, wait for it to finish, then send `chat/fallback-2.txt`. They do the same thing with the code pasted in.
+### What changed in v1.1.0
+
+- **No more jumping.** The hero stays on screen with CSS `position: sticky`, which the browser handles as it scrolls, instead of a JavaScript pin.
+  - If an element around the hero clips or scrolls (`overflow: hidden` / `auto`), sticky can't work. The component then falls back to the JavaScript pin and logs a `[TechFluentHero]` warning in the console.
+- **Calmer snapping.** When scrolling stops (after 0.25s), the page settles on a kid. A small nudge (under 15%, about 2 wheel notches) goes back to the same kid; anything more carries on to the next one.
+- **Arabic.** Arabic words slide as whole words, so the letters stay joined. They have no letter spacing and a taller mask for alef, hamza and descenders, and get more space around them.
+- **Any word length.** The big word is sized from its measured width, so long or short words fit the card.
+- **Faster word swap,** so two words aren't on screen together for long.
+
+## Arabic page
+
+Pass the Arabic text as props:
+
+```tsx
+<TechFluentHero
+  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.0/public/tech-fluent-hero"
+  kicker="…"
+  words={[
+    { text: "…", from: 0, rest: 0 },   // the girl
+    { text: "…", from: 42, rest: 78 }, // the boy
+  ]}
+  imageLabel="…"                        // screen-reader description
+/>
+```
 
 ## Check it in Lovable's preview
 
-- **Desktop:** the chair sits on the bottom edge of the card. Scrolling spins it from the girl to the boy, and "Generations" changes to "Creators". If you stop half-way, the page settles on the nearer kid.
+- **Top of the page:** the card starts right under the top edge, with the navbar floating over it. There's no empty band above it.
+- **Desktop:** the chair sits on the bottom edge of the card. Scrolling spins it from the girl to the boy, and "Generations" changes to "Creators". One wheel notch and a pause go back to the same kid; a longer scroll goes on to the next. Nothing jumps.
 - **Phone:** the parts stack in a column, and the word sits fully above the kid's head.
-- **Scrolling on:** after the boy, the next section scrolls in normally.
+- **Console:** no `[TechFluentHero]` warning.
 
 ## Files
 
@@ -36,35 +60,26 @@ The images (8 sprite sheets and 2 glows) stay in this repository and load throug
 | `public/tech-fluent-hero/glow-blue.svg`, `glow-yellow.svg` | The background glows from Figma |
 | `chat/` | The messages to paste into Lovable |
 
-A visitor loads one set: 4 sheets and 2 glows.
-
 ## Changing it later
 
 1. Edit the files, then rebuild the generated parts from `C:\chair-scroll`:
    - `node scripts/make-sheets.mjs "<video.mov>"` rebuilds the sprite sheets from the source video.
    - `node scripts/lovable-messages.mjs` rebuilds the chat messages. Update `TAG` in it first.
-2. Commit, tag the new version (for example `v1.1.0`) and push the commit and the tag.
-3. In Lovable, change `@v1.0.0` in `assetsBase` to the new tag.
-
-A pinned tag never changes, so jsDelivr can cache it for good. A link to `@main` can keep serving an old copy for hours after a change.
+2. Commit, tag the new version and push the commit and the tag.
+3. Send Lovable the new message. A pinned tag never changes, so jsDelivr caches it for good. A link to `@main` can keep serving an old copy for hours.
 
 ## Settings
 
 | What | Where |
 |---|---|
-| Words, frames | Props: `<TechFluentHero kicker="Tech Fluent" words={[{ text: "Generations", from: 0, rest: 0 }, { text: "Creators", from: 42, rest: 78 }]} />` |
+| Words, frames | Props `kicker`, `words` (`from` = frame where the word takes over, `rest` = frame to settle on) |
 | Where the images load from | Prop `assetsBase`. Leave it out to use the project's own `public/tech-fluent-hero/` |
 | Space for the navbar (phones/tablets) | `--tfh-nav-bottom` in the CSS: where the fixed header ends. 74px = `top-4` + 58px tall |
 | Colours | `--tfh-navy`, `--tfh-sky`, `--tfh-page-bg` at the top of the CSS |
-| Spin speed | `window.innerHeight * ws.length` in the component (one screen of scrolling per kid) |
+| Spin speed | `--tfh-steps` × `100vh` of scrolling (one screen per word), set by the component |
+| Snapping | `NUDGE` (0.15) and `delay` (0.25s) in the component |
 | Chair height on desktop | `--seat` on `.tfh-chair` (0.757 = the shell bottom sits on the card edge) |
-| Phone spacing | The `max-width: 640px` block: `--overlap` (how far the head goes into the word) and `--kicker-gap` |
-
-## How it works
-
-- `useGSAP` runs the setup and reverts it on unmount, which removes the pin and the ScrollTrigger. The frame loader is stopped too.
-- The site already loads Somar Rounded (400, 500, 600), so the hero inherits the font.
-- With "reduce motion" turned on in the OS, scrolling drives the frames directly, with no snap and an instant word swap.
+| Phone spacing | The `max-width: 640px` blocks: `--overlap` (how far the head goes into the word) and `--kicker-gap` |
 
 ## Tested
 
@@ -73,8 +88,9 @@ Tested in a Vite + React 18 + TypeScript (strict) app with StrictMode, a Tailwin
 | Check | Result |
 |---|---|
 | Type-check and build | No errors |
-| Sheet cells | Frames 0, 19, 20, 42, 59, 60 and 78 match the original frames (mean difference ≤ 1.3, against 11.4 for a neighbouring frame) |
-| Desktop 1440 × 757 | Word 182px. The chair's bottom is on the card edge |
-| Motion | Snap goes both ways, the word swaps, and the next section follows the hero |
-| Unmount and remount | Cleans up and runs again (one pin each time) |
-| Phone 375 × 812 | Stacked layout. The head starts 14px under the word. No sideways scroll |
+| Sticky | The hero stays at the top through the whole scroll, then the next section follows. Also with 80px of space above it, where it moves up smoothly and then sticks |
+| Fallback | Inside an `overflow-x: hidden` wrapper it switches to the JavaScript pin and logs the warning |
+| Snapping (simulated wheel) | 1 notch goes back, 3 notches go on, from either kid |
+| English | Desktop: 182px word, chair on the card edge. Phone: 49px word, head 14px below it |
+| Arabic (RTL, أجيال / مبدعون) | Words stay joined and aren't clipped, and the hidden word stays hidden. Clearance under the small line: 16px desktop, 19px tablet, 12px phone. The head is 12–14px below the word on phone |
+| Images from jsDelivr | All load, with no console errors |
