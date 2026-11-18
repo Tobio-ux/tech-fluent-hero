@@ -27,19 +27,37 @@ Paste `chat/update-from-github.txt` into the Lovable chat. It tells Lovable to d
 
 ## Arabic page
 
-Pass the Arabic text as props:
+Paste `chat/arabic-page.txt` into the Lovable chat after the v1.1.0 update. It passes the Arabic text as props, only when the site language is Arabic:
 
 ```tsx
 <TechFluentHero
   assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.0/public/tech-fluent-hero"
-  kicker="…"
+  kicker="التكنولوجيا لغة"
   words={[
-    { text: "…", from: 0, rest: 0 },   // the girl
-    { text: "…", from: 42, rest: 78 }, // the boy
+    { text: "الأجيال", from: 0, rest: 0 },   // the girl
+    { text: "المبدعين", from: 42, rest: 78 }, // the boy
   ]}
-  imageLabel="…"                        // screen-reader description
+  imageLabel="طفلان يتناوبان الجلوس على كرسي برتقالي يدور"
 />
 ```
+
+**Why this wording.** The small line stays while the big word changes, so it has to read correctly from top to bottom with both words: "التكنولوجيا لغة الأجيال" and "التكنولوجيا لغة المبدعين". This keeps the idea of "Tech Fluent" (fluent in the language of technology).
+
+The site's earlier pattern, "أجيال تتحدث التكنولوجيا", doesn't work here for two reasons:
+- With "تتحدث التكنولوجيا" on top, the line reads "technology speaks".
+- Its verb would have to change to "يتحدثون" for "مبدعون".
+
+**Tested** with this copy (RTL):
+
+| Size | Under the small line | Head below the word | Side space |
+|---|---|---|---|
+| Desktop 1440 | 33px / 70px | Head in front of the word, as in English | |
+| Tablet 768 | 41px / 73px | Head in front of the word, as in English | 60px or more |
+| Phone 375 | 30px / 46px | 12–14px | 30px or more |
+
+Nothing is clipped, and the hidden word never shows. Screen readers read the whole sentence.
+
+**v1.0.0 on an Arabic page:** the English word shows reversed ("snoitareneG"), because the page's right-to-left direction flips the letter order. v1.1.0 sets each word's direction from its own text.
 
 ## Check it in Lovable's preview
 

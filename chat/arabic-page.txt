@@ -1,0 +1,19 @@
+Show the hero in Arabic on the Arabic version of the home page.
+
+Use the same mechanism the site already uses to switch text between English and Arabic, and pass these props to <TechFluentHero /> only when the language is Arabic. Keep the English page exactly as it is.
+
+```tsx
+kicker="التكنولوجيا لغة"
+words={[
+  { text: "الأجيال", from: 0, rest: 0 },
+  { text: "المبدعين", from: 42, rest: 78 },
+]}
+imageLabel="طفلان يتناوبان الجلوس على كرسي برتقالي يدور"
+```
+
+Keep the same assetsBase, and don't change the files in src/components/tech-fluent-hero/.
+This needs the v1.1.0 files (TechFluentHero.tsx has 347 lines). If they're still an older version, update them first: older versions split the Arabic words into separate letters and break them apart.
+
+When you're done, tell me:
+1. How the language is detected.
+2. That the English page still shows "Tech Fluent" with "Generations" and "Creators".
