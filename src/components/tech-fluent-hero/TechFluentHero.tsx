@@ -55,6 +55,9 @@ const HIDE = 175;
 /** Arabic glyphs are taller (alef, hamza, descenders) and their mask is taller, so they wait further away. */
 const HIDE_JOINED = 220;
 
+/** Set on <html> once the page has scrolled past the hero (for the site's navbar). */
+const PASSED_ATTR = "data-tfh-passed";
+
 /** Arabic letters join up, so splitting a word into letters would break it apart. */
 const JOINED_SCRIPT = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/;
 const isJoined = (text: string) => JOINED_SCRIPT.test(text);
@@ -90,7 +93,7 @@ type Props = {
   /**
    * Folder that holds sheets/ and the glow SVGs. Default: the project's own
    * public/tech-fluent-hero/. Or the GitHub copy through jsDelivr:
-   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.0.0/public/tech-fluent-hero"
+   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero"
    */
   assetsBase?: string;
   /** Screen-reader description of the animation. */
@@ -283,6 +286,22 @@ export default function TechFluentHero({
           });
           tl.to(state, { frame: LAST, duration: 1, onUpdate: onFrame }, 0);
           onFrame();
+
+          // <html data-tfh-passed> once the page has scrolled past the hero, so the
+          // site's navbar can sit lower while it floats inside the hero card and move
+          // up after it (see LOVABLE.md). Settling on the last kid isn't "past" yet.
+          // (window.scrollY, not st.scroll(): ScrollTrigger caches that until its next frame.)
+          const st = tl.scrollTrigger;
+          const markPassed = () => {
+            if (st) document.documentElement.toggleAttribute(PASSED_ATTR, window.scrollY > st.end + 1);
+          };
+          window.addEventListener("scroll", markPassed, { passive: true });
+          ScrollTrigger.addEventListener("refresh", markPassed);
+          markPassed();
+          return () => {
+            window.removeEventListener("scroll", markPassed);
+            ScrollTrigger.removeEventListener("refresh", markPassed);
+          };
         },
       );
 
@@ -300,6 +319,7 @@ export default function TechFluentHero({
         wrap.classList.remove("tfh-wrap--sticky");
         wrap.style.removeProperty("--tfh-steps");
         mm.revert();
+        document.documentElement.removeAttribute(PASSED_ATTR);
         seq.destroy();
       };
     },

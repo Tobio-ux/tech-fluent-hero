@@ -1,24 +1,48 @@
 # Tech Fluent hero → Lovable
 
 A React version of `v2.html`'s hero (the card, glows, big word and spinning chair), for the Lovable project behind `ischool-new.lovable.app`.
-The site's own navbar stays as it is. The hero leaves room for it.
+The site's own navbar stays. The hero leaves room for it, and tells it when the page has scrolled past the hero (see "The navbar").
 
-Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.1.1`)
+Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.2.0`)
 
-## Update Lovable to v1.1.1 (one message)
+## Update Lovable to v1.2.0 (one message)
 
-Paste `chat/update-from-github.txt` into the Lovable chat. It tells Lovable to do four things:
+**From v1.1.1** (what the live site runs since the crash fix): paste `chat/update-v1.2.0.txt` into the Lovable chat. It tells Lovable to:
 
-1. Replace the 3 component files with the `v1.1.1` versions from GitHub.
-2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.1/public/tech-fluent-hero`.
-3. Remove any space above the hero, and any `overflow-hidden`, `transform` or `filter` on elements around it.
-4. Report each file's line count: TechFluentHero.tsx 353, frame-sequence.ts 144, tech-fluent-hero.css 270.
+1. Replace `TechFluentHero.tsx` (373 lines) and `tech-fluent-hero.css` (292 lines) with the `v1.2.0` versions. `frame-sequence.ts` didn't change.
+2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero`.
+3. Change the navbar so it's 48px from the top only while it's over the hero, and 16px everywhere else (see "The navbar" below).
 
-**If Lovable can't open the links**, send `chat/update-fallback-1.txt`, wait for it to finish, then send `chat/update-fallback-2.txt`.
+**Fresh install, or an older version:** paste `chat/update-from-github.txt`. It replaces all 3 files, sets `assetsBase`, removes any space and clipping around the hero, and sets up the navbar. If Lovable can't open the links, send `chat/update-fallback-1.txt`, wait for it to finish, then send `chat/update-fallback-2.txt`.
+
+### What changed in v1.2.0
+
+- **The Arabic small line no longer slides under the navbar.** On a laptop it was up to 23px under the navbar (1280 × 593), because Arabic letters are about 1.5× as tall as Latin ones at the same size and v1.1 lifted the small line to make room. Now:
+  - The Arabic big word is 160 instead of 182 (Figma px), on the same baseline as "Generations", and the small line sits just above it.
+  - On any screen too short to fit everything, the whole hero scales down a little, so the small line always stays at least `--tfh-nav-gap` (20px) below the navbar. In English this only happens on screens shorter than ~600px.
+- **Navbar room on tablets.** From 1024px wide the navbar sits 48px down, so the hero now leaves room for it there too (`--tfh-nav-bottom` 106px). Before, on an iPad held sideways (1024 × 768) "Tech Fluent" was 4px from the navbar; now it's 37px.
+- **`<html data-tfh-passed>`.** The hero adds it once the page has scrolled past the hero, and removes it when you scroll back or leave the page. The navbar CSS uses it.
 
 ### What changed in v1.1.1
 
-- **Server rendering fix.** `import { gsap } from "gsap"` instead of the default import, and the GSAP plugins are registered only in the browser. With the old import, a server that loads gsap as CommonJS crashed on every page ("This page didn't load"). If the site shows that screen, send `chat/fix-site-crash.txt`.
+- **Server rendering fix.** `import { gsap } from "gsap"` instead of the default import, and the GSAP plugins are registered only in the browser. With the old import, the live server crashed on every page ("This page didn't load"): registering the plugins starts a timer, which the server doesn't allow while a file loads.
+
+## The navbar
+
+The site's `<header>` floats over the page. On desktop (1024px and wider) it sits 48px from the top while it's over the hero, so it lines up inside the hero card (24px card margin + 24px). Everywhere else it sits 16px from the top: on every other page, and on the home page once you scroll past the hero.
+
+The header uses `top-4` (no `lg:top-*` class) and the class `site-header`, and the global stylesheet has:
+
+```css
+.site-header { transition: top 0.3s ease; }
+@media (min-width: 1024px) {
+  html:has(.tfh-wrap):not([data-tfh-passed]) .site-header { top: 48px; }
+}
+```
+
+- `html:has(.tfh-wrap)`: the page has the hero. This works from the first paint, before any JavaScript runs.
+- `[data-tfh-passed]`: set by the hero once you scroll past it. Settling on the second kid doesn't count as past.
+- If you change the navbar's position or height, update `--tfh-nav-bottom` in the hero's CSS.
 
 ### What changed in v1.1.0
 
@@ -31,11 +55,11 @@ Paste `chat/update-from-github.txt` into the Lovable chat. It tells Lovable to d
 
 ## Arabic page
 
-Paste `chat/arabic-page.txt` into the Lovable chat after the v1.1.1 update. It passes the Arabic text as props, only when the site language is Arabic:
+Already done on the live site. For a fresh install, paste `chat/arabic-page.txt` into the Lovable chat after the update. It passes the Arabic text as props, only when the site language is Arabic:
 
 ```tsx
 <TechFluentHero
-  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.1/public/tech-fluent-hero"
+  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero"
   kicker="التكنولوجيا لغة"
   words={[
     { text: "الأجيال", from: 0, rest: 0 },   // the girl
@@ -51,13 +75,16 @@ The site's earlier pattern, "أجيال تتحدث التكنولوجيا", does
 - With "تتحدث التكنولوجيا" on top, the line reads "technology speaks".
 - Its verb would have to change to "يتحدثون" for "مبدعون".
 
-**Tested** with this copy (RTL):
+**Tested** with this copy (RTL), v1.2.0, measured on the letters themselves (not their boxes), with the navbar at 48px from 1024px wide:
 
-| Size | Under the small line | Head below the word | Side space |
-|---|---|---|---|
-| Desktop 1440 | 33px / 70px | Head in front of the word, as in English | |
-| Tablet 768 | 41px / 73px | Head in front of the word, as in English | 60px or more |
-| Phone 375 | 30px / 46px | 12–14px | 30px or more |
+| Size | Navbar → small line | Small line → big word | Big word | Head |
+|---|---|---|---|---|
+| Laptop 1280 × 593 | 19px | 12px | 118px | In front of the word, as in English |
+| Laptop 1440 × 789 | 36px | 17px | 167px | In front of the word |
+| Desktop 1920 × 955 | 63px | 21px | 205px | In front of the word |
+| Tablet 768 × 1024 | 43px | 44px | 155px | In front of the word |
+| Tablet sideways 1024 × 768 | 38px | 51px | 182px | In front of the word |
+| Phone 390 × 844 | 129px | 22px | 77px | 15px below the word |
 
 Nothing is clipped, and the hidden word never shows. Screen readers read the whole sentence.
 
@@ -66,6 +93,7 @@ Nothing is clipped, and the hidden word never shows. Screen readers read the who
 ## Check it in Lovable's preview
 
 - **Top of the page:** the card starts right under the top edge, with the navbar floating over it. There's no empty band above it.
+- **Navbar (desktop):** 48px from the top over the hero, with "Tech Fluent" (or the Arabic line) fully below it. Scrolling past the hero moves it up to 16px; scrolling back brings it down again. Other pages: 16px.
 - **Desktop:** the chair sits on the bottom edge of the card. Scrolling spins it from the girl to the boy, and "Generations" changes to "Creators". One wheel notch and a pause go back to the same kid; a longer scroll goes on to the next. Nothing jumps.
 - **Phone:** the parts stack in a column, and the word sits fully above the kid's head.
 - **Console:** no `[TechFluentHero]` warning.
@@ -96,7 +124,9 @@ Nothing is clipped, and the hidden word never shows. Screen readers read the who
 |---|---|
 | Words, frames | Props `kicker`, `words` (`from` = frame where the word takes over, `rest` = frame to settle on) |
 | Where the images load from | Prop `assetsBase`. Leave it out to use the project's own `public/tech-fluent-hero/` |
-| Space for the navbar (phones/tablets) | `--tfh-nav-bottom` in the CSS: where the fixed header ends. 74px = `top-4` + 58px tall |
+| Space for the navbar | `--tfh-nav-bottom` in the CSS: where the fixed header ends while it's over the hero. 74px = 16 + 58 tall; 106px = 48 + 58 from 1024px wide |
+| Least space under the navbar (desktop) | `--tfh-nav-gap` (20px). The hero scales down when a screen is too short to keep it |
+| Big word size (desktop) | `--tfh-word-size` on `.tfh-card`: 182 (English), 160 for Arabic, in Figma px |
 | Colours | `--tfh-navy`, `--tfh-sky`, `--tfh-page-bg` at the top of the CSS |
 | Spin speed | `--tfh-steps` × `100vh` of scrolling (one screen per word), set by the component |
 | Snapping | `NUDGE` (0.15) and `delay` (0.25s) in the component |
@@ -105,7 +135,7 @@ Nothing is clipped, and the hidden word never shows. Screen readers read the who
 
 ## Tested
 
-Tested in a Vite + React 18 + TypeScript (strict) app with StrictMode, a Tailwind-like reset and a fixed header that copies the live site (top 16px, 58px tall):
+Tested in a Vite + React 18 + TypeScript (strict) app with StrictMode, a Tailwind-like reset and a fixed header that copies the live site (58px tall, 16px from the top, 48px over the hero from 1024px, with the navbar CSS above):
 
 | Check | Result |
 |---|---|
@@ -114,5 +144,7 @@ Tested in a Vite + React 18 + TypeScript (strict) app with StrictMode, a Tailwin
 | Fallback | Inside an `overflow-x: hidden` wrapper it switches to the JavaScript pin and logs the warning |
 | Snapping (simulated wheel) | 1 notch goes back, 3 notches go on, from either kid |
 | English | Desktop: 182px word, chair on the card edge. Phone: 49px word, head 14px below it |
-| Arabic (RTL, أجيال / مبدعون) | Words stay joined and aren't clipped, and the hidden word stays hidden. Clearance under the small line: 16px desktop, 19px tablet, 12px phone. The head is 12–14px below the word on phone |
+| Arabic (RTL, الأجيال / المبدعين) | Words stay joined and aren't clipped, and the hidden word stays hidden. The small line is at least 19px below the navbar at every size from 1280 × 500 to 2560 × 1300 (see the Arabic page table) |
+| Navbar | `data-tfh-passed` is off at the top, mid-way and when settled on the boy, on 2px past the hero, off again after scrolling back, after a reload, and with the JavaScript-pin fallback. Unmounting the hero removes it, and the navbar goes to 16px |
+| Server rendering | Renders in Node, both with gsap loaded as a package and bundled |
 | Images from jsDelivr | All load, with no console errors |

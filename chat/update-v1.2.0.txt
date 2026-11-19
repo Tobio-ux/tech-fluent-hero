@@ -1,0 +1,31 @@
+Update the hero to version v1.2.0 of https://github.com/Tobio-ux/tech-fluent-hero, and make the navbar sit lower only while it's over the hero.
+
+1. Replace these 2 files in src/components/tech-fluent-hero/ with the v1.2.0 versions. Fetch each one from its URL and save its content exactly. Copy every file character for character. Do not edit, reformat, rename, split or "improve" it.
+- TechFluentHero.tsx (373 lines): https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.2.0/src/components/tech-fluent-hero/TechFluentHero.tsx
+- tech-fluent-hero.css (292 lines): https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.2.0/src/components/tech-fluent-hero/tech-fluent-hero.css
+frame-sequence.ts didn't change.
+
+2. Set assetsBase on <TechFluentHero /> (English and Arabic) to "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero".
+
+3. The navbar. The <header> has lg:top-12, so on desktop it's 48px from the top on every page and all the way down the home page. It should be 48px only while it floats inside the home page's hero card, and 16px (top-4) everywhere else: on every other page, and on the home page once you scroll past the hero.
+   a. On the <header> (fixed left-1/2 top-4 z-50 w-full max-w-site -translate-x-1/2 px-4 lg:top-12), remove lg:top-12 and add the class site-header. Change nothing else on it.
+   b. Add this to the site's global stylesheet, after the Tailwind directives and outside any @layer:
+
+```css
+/* Navbar: 48px down while it floats inside the home page's hero card, 16px
+   everywhere else (other pages, and the home page once you scroll past the
+   hero). The hero sets data-tfh-passed on <html> when you scroll past it. */
+.site-header { transition: top 0.3s ease; }
+@media (min-width: 1024px) {
+  html:has(.tfh-wrap):not([data-tfh-passed]) .site-header { top: 48px; }
+}
+```
+
+   The hero adds data-tfh-passed to <html> when you scroll past it, and removes it when you scroll back up or leave the page. Don't add a scroll listener or state to the header for this.
+
+4. Publish, then check in a desktop window 1440 wide:
+- Home page, at the top: the navbar is 48px from the top, inside the hero card. On the Arabic page, "التكنولوجيا لغة" is fully below the navbar, with space between them.
+- Scroll through the hero until the boy: the navbar stays at 48px. Keep scrolling past the hero: it moves up to 16px. Scroll back up: it returns to 48px.
+- /blog and /about: the navbar is 16px from the top.
+
+Tell me the line count of each file you replaced, and what you changed in the header and the CSS.

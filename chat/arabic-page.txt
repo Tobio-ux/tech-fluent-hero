@@ -12,7 +12,7 @@ imageLabel="طفلان يتناوبان الجلوس على كرسي برتقا�
 ```
 
 Keep the same assetsBase, and don't change the files in src/components/tech-fluent-hero/.
-This needs the v1.1.1 files (TechFluentHero.tsx has 353 lines). If they're still an older version, update them first: older versions split the Arabic words into separate letters and break them apart.
+This needs the v1.2.0 files (TechFluentHero.tsx has 373 lines). If they're still an older version, update them first: older versions split the Arabic words into separate letters and break them apart.
 
 When you're done, tell me:
 1. How the language is detected.

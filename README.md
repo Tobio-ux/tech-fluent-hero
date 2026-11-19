@@ -23,9 +23,11 @@ Figma: [Website] iSchool 2026, node 8613:20021.
 ```tsx
 import TechFluentHero from "@/components/tech-fluent-hero/TechFluentHero";
 
-<TechFluentHero assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.1/public/tech-fluent-hero" />
+<TechFluentHero assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero" />
 ```
 
 Alternatively, copy `public/tech-fluent-hero/` into your project's `public/` and leave out `assetsBase`.
+
+4. Optional: the hero adds `data-tfh-passed` to `<html>` once the page has scrolled past it, so a fixed navbar can sit differently over the hero. See "The navbar" in `LOVABLE.md`.
 
 More detail (settings, how it works, how it was tested) is in `LOVABLE.md`.

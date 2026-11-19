@@ -60,6 +60,9 @@ const HIDE = 175;
 /** Arabic glyphs are taller (alef, hamza, descenders) and their mask is taller, so they wait further away. */
 const HIDE_JOINED = 220;
 
+/** Set on <html> once the page has scrolled past the hero (for the site's navbar). */
+const PASSED_ATTR = "data-tfh-passed";
+
 /** Arabic letters join up, so splitting a word into letters would break it apart. */
 const JOINED_SCRIPT = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/;
 const isJoined = (text: string) => JOINED_SCRIPT.test(text);
@@ -95,7 +98,7 @@ type Props = {
   /**
    * Folder that holds sheets/ and the glow SVGs. Default: the project's own
    * public/tech-fluent-hero/. Or the GitHub copy through jsDelivr:
-   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.0.0/public/tech-fluent-hero"
+   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero"
    */
   assetsBase?: string;
   /** Screen-reader description of the animation. */
@@ -288,6 +291,22 @@ export default function TechFluentHero({
           });
           tl.to(state, { frame: LAST, duration: 1, onUpdate: onFrame }, 0);
           onFrame();
+
+          // <html data-tfh-passed> once the page has scrolled past the hero, so the
+          // site's navbar can sit lower while it floats inside the hero card and move
+          // up after it (see LOVABLE.md). Settling on the last kid isn't "past" yet.
+          // (window.scrollY, not st.scroll(): ScrollTrigger caches that until its next frame.)
+          const st = tl.scrollTrigger;
+          const markPassed = () => {
+            if (st) document.documentElement.toggleAttribute(PASSED_ATTR, window.scrollY > st.end + 1);
+          };
+          window.addEventListener("scroll", markPassed, { passive: true });
+          ScrollTrigger.addEventListener("refresh", markPassed);
+          markPassed();
+          return () => {
+            window.removeEventListener("scroll", markPassed);
+            ScrollTrigger.removeEventListener("refresh", markPassed);
+          };
         },
       );
 
@@ -305,6 +324,7 @@ export default function TechFluentHero({
         wrap.classList.remove("tfh-wrap--sticky");
         wrap.style.removeProperty("--tfh-steps");
         mm.revert();
+        document.documentElement.removeAttribute(PASSED_ATTR);
         seq.destroy();
       };
     },
@@ -358,7 +378,7 @@ export default function TechFluentHero({
 }
 ```
 
-2. In the <TechFluentHero /> on the home page, set assetsBase to "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.1/public/tech-fluent-hero" (the images load from there; don't copy them into the project).
+2. In the <TechFluentHero /> on the home page, set assetsBase to "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero" (the images load from there; don't copy them into the project).
 
 Then fix the page around the hero. The hero must start at the very top of the page:
 - Make the hero the first element inside <main>, with no padding, margin or spacer element above it. The header is fixed and floats over the hero, so it needs no space of its own.
@@ -366,6 +386,18 @@ Then fix the page around the hero. The hero must start at the very top of the pa
 - No element that wraps the hero may have a transform, filter or will-change.
 - After this, the browser console must not show a "[TechFluentHero]" warning.
 
+The navbar sits 48px down on desktop only while it floats inside the hero card, and 16px (top-4) everywhere else. On the <header>, use top-4 with no lg:top-* class, add the class site-header, and add this to the global stylesheet, after the Tailwind directives and outside any @layer (the hero adds data-tfh-passed to <html> once you scroll past it):
+
+```css
+/* Navbar: 48px down while it floats inside the home page's hero card, 16px
+   everywhere else (other pages, and the home page once you scroll past the
+   hero). The hero sets data-tfh-passed on <html> when you scroll past it. */
+.site-header { transition: top 0.3s ease; }
+@media (min-width: 1024px) {
+  html:has(.tfh-wrap):not([data-tfh-passed]) .site-header { top: 48px; }
+}
+```
+
 When you're done, tell me:
-1. The line count of each file (expected: TechFluentHero.tsx 353, frame-sequence.ts 144, tech-fluent-hero.css 270).
+1. The line count of each file (expected: TechFluentHero.tsx 373, frame-sequence.ts 144, tech-fluent-hero.css 292).
 2. Which elements around the hero you changed, and how.
