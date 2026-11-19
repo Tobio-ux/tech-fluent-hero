@@ -11,15 +11,21 @@
  * The page font (Somar Rounded) is inherited from the site.
  */
 import { useId, useRef } from "react";
-import gsap from "gsap";
+// Named import: on a server (SSR), "gsap" can load as CommonJS, where the default
+// import is the whole module object and gsap.registerPlugin doesn't exist.
+import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
 import { createFrameSequence, type SheetManifest } from "./frame-sequence";
 import "./tech-fluent-hero.css";
 
-gsap.registerPlugin(ScrollTrigger, useGSAP);
-// Don't recalculate when a phone's address bar shows/hides.
-ScrollTrigger.config({ ignoreMobileResize: true });
+// Browser only: the server just renders the markup, and this runs when the file
+// loads, so anything that fails here would take down every page.
+if (typeof window !== "undefined") {
+  gsap.registerPlugin(ScrollTrigger, useGSAP);
+  // Don't recalculate when a phone's address bar shows/hides.
+  ScrollTrigger.config({ ignoreMobileResize: true });
+}
 
 export type HeroWord = {
   /** The big word. */

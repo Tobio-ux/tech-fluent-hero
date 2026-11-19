@@ -23,7 +23,7 @@ Figma: [Website] iSchool 2026, node 8613:20021.
 ```tsx
 import TechFluentHero from "@/components/tech-fluent-hero/TechFluentHero";
 
-<TechFluentHero assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.0/public/tech-fluent-hero" />
+<TechFluentHero assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.1/public/tech-fluent-hero" />
 ```
 
 Alternatively, copy `public/tech-fluent-hero/` into your project's `public/` and leave out `assetsBase`.

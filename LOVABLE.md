@@ -3,18 +3,22 @@
 A React version of `v2.html`'s hero (the card, glows, big word and spinning chair), for the Lovable project behind `ischool-new.lovable.app`.
 The site's own navbar stays as it is. The hero leaves room for it.
 
-Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.1.0`)
+Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.1.1`)
 
-## Update Lovable to v1.1.0 (one message)
+## Update Lovable to v1.1.1 (one message)
 
 Paste `chat/update-from-github.txt` into the Lovable chat. It tells Lovable to do four things:
 
-1. Replace the 3 component files with the `v1.1.0` versions from GitHub.
-2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.0/public/tech-fluent-hero`.
+1. Replace the 3 component files with the `v1.1.1` versions from GitHub.
+2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.1/public/tech-fluent-hero`.
 3. Remove any space above the hero, and any `overflow-hidden`, `transform` or `filter` on elements around it.
-4. Report each file's line count: TechFluentHero.tsx 347, frame-sequence.ts 144, tech-fluent-hero.css 270.
+4. Report each file's line count: TechFluentHero.tsx 353, frame-sequence.ts 144, tech-fluent-hero.css 270.
 
 **If Lovable can't open the links**, send `chat/update-fallback-1.txt`, wait for it to finish, then send `chat/update-fallback-2.txt`.
+
+### What changed in v1.1.1
+
+- **Server rendering fix.** `import { gsap } from "gsap"` instead of the default import, and the GSAP plugins are registered only in the browser. With the old import, a server that loads gsap as CommonJS crashed on every page ("This page didn't load"). If the site shows that screen, send `chat/fix-site-crash.txt`.
 
 ### What changed in v1.1.0
 
@@ -27,11 +31,11 @@ Paste `chat/update-from-github.txt` into the Lovable chat. It tells Lovable to d
 
 ## Arabic page
 
-Paste `chat/arabic-page.txt` into the Lovable chat after the v1.1.0 update. It passes the Arabic text as props, only when the site language is Arabic:
+Paste `chat/arabic-page.txt` into the Lovable chat after the v1.1.1 update. It passes the Arabic text as props, only when the site language is Arabic:
 
 ```tsx
 <TechFluentHero
-  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.0/public/tech-fluent-hero"
+  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.1/public/tech-fluent-hero"
   kicker="التكنولوجيا لغة"
   words={[
     { text: "الأجيال", from: 0, rest: 0 },   // the girl

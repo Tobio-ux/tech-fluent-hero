@@ -1,11 +1,11 @@
-Update the scroll-animated hero to version v1.1.0 of https://github.com/Tobio-ux/tech-fluent-hero. This version fixes the jumpy scrolling and supports Arabic words.
+Update the scroll-animated hero to version v1.1.1 of https://github.com/Tobio-ux/tech-fluent-hero. This version fixes the jumpy scrolling and supports Arabic words.
 
 1. Replace the 3 files in src/components/tech-fluent-hero/ with these. Fetch each one from its URL and save its content exactly. Copy every file character for character. Do not edit, reformat, rename, split or "improve" it.
-- TechFluentHero.tsx: https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.1.0/src/components/tech-fluent-hero/TechFluentHero.tsx
-- frame-sequence.ts: https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.1.0/src/components/tech-fluent-hero/frame-sequence.ts
-- tech-fluent-hero.css: https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.1.0/src/components/tech-fluent-hero/tech-fluent-hero.css
+- TechFluentHero.tsx: https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.1.1/src/components/tech-fluent-hero/TechFluentHero.tsx
+- frame-sequence.ts: https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.1.1/src/components/tech-fluent-hero/frame-sequence.ts
+- tech-fluent-hero.css: https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.1.1/src/components/tech-fluent-hero/tech-fluent-hero.css
 
-2. In the <TechFluentHero /> on the home page, set assetsBase to "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.0/public/tech-fluent-hero" (the images load from there; don't copy them into the project).
+2. In the <TechFluentHero /> on the home page, set assetsBase to "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.1.1/public/tech-fluent-hero" (the images load from there; don't copy them into the project).
 
 Then fix the page around the hero. The hero must start at the very top of the page:
 - Make the hero the first element inside <main>, with no padding, margin or spacer element above it. The header is fixed and floats over the hero, so it needs no space of its own.
@@ -14,5 +14,5 @@ Then fix the page around the hero. The hero must start at the very top of the pa
 - After this, the browser console must not show a "[TechFluentHero]" warning.
 
 When you're done, tell me:
-1. The line count of each file (expected: TechFluentHero.tsx 347, frame-sequence.ts 144, tech-fluent-hero.css 270).
+1. The line count of each file (expected: TechFluentHero.tsx 353, frame-sequence.ts 144, tech-fluent-hero.css 270).
 2. Which elements around the hero you changed, and how.
