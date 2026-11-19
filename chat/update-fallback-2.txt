@@ -15,7 +15,7 @@
  * sheets + 2 glows). They can also load from a CDN: see the assetsBase prop.
  * The page font (Somar Rounded) is inherited from the site.
  */
-import { useId, useRef } from "react";
+import { useId, useRef, type CSSProperties } from "react";
 // Named import: on a server (SSR), "gsap" can load as CommonJS, where the default
 // import is the whole module object and gsap.registerPlugin doesn't exist.
 import { gsap } from "gsap";
@@ -62,6 +62,11 @@ const HIDE_JOINED = 220;
 
 /** Set on <html> once the page has scrolled past the hero (for the site's navbar). */
 const PASSED_ATTR = "data-tfh-passed";
+/**
+ * Set on the wrapper once the words are in place. Until then (the server-rendered
+ * page, before the script loads) the CSS shows only the first word.
+ */
+const READY_ATTR = "data-tfh-ready";
 
 /** Arabic letters join up, so splitting a word into letters would break it apart. */
 const JOINED_SCRIPT = /[؀-ۿݐ-ݿࢠ-ࣿﭐ-﷿ﹰ-﻿]/;
@@ -98,7 +103,7 @@ type Props = {
   /**
    * Folder that holds sheets/ and the glow SVGs. Default: the project's own
    * public/tech-fluent-hero/. Or the GitHub copy through jsDelivr:
-   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero"
+   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.1/public/tech-fluent-hero"
    */
   assetsBase?: string;
   /** Screen-reader description of the animation. */
@@ -123,9 +128,10 @@ export default function TechFluentHero({
 
   useGSAP(
     () => {
+      const wrap = wrapRef.current;
       const section = sectionRef.current;
       const canvas = canvasRef.current;
-      if (!section || !canvas || words.length === 0) return;
+      if (!wrap || !section || !canvas || words.length === 0) return;
 
       const LAST = Math.min(FRAME_COUNT - 1, Math.max(0, endFrame));
       const manifest: SheetManifest = {
@@ -147,7 +153,18 @@ export default function TechFluentHero({
         hide: isJoined(words[i].text) ? HIDE_JOINED : HIDE,
       }));
       ws.forEach((w, i) => gsap.set(w.chars, { yPercent: i === 0 ? 0 : w.hide }));
-      if (srRef.current) srRef.current.textContent = ws[0].text;
+      wrap.setAttribute(READY_ATTR, "");
+
+      // The screen-reader word after "Tech Fluent". React renders the first one (so
+      // the server-rendered heading is complete); change its text node in place so
+      // React keeps track of it.
+      const announce = (text: string) => {
+        const sr = srRef.current;
+        if (!sr) return;
+        if (sr.firstChild) sr.firstChild.nodeValue = text;
+        else sr.textContent = text;
+      };
+      announce(ws[0].text);
 
       // The layout sizes the big word from its width in em (--tfh-word-em), so any
       // word or language fits the card. Measure the widest one (offsets ignore the
@@ -187,7 +204,7 @@ export default function TechFluentHero({
         const prev = ws[active];
         const next = ws[idx];
         active = idx;
-        if (srRef.current) srRef.current.textContent = next.text;
+        announce(next.text);
 
         const d = reduceMotion ? 0 : 1;
         const from = dir > 0 ? "start" : "end";
@@ -218,12 +235,11 @@ export default function TechFluentHero({
 
       // ------------------------------------------------------------- pinning
       // Preferred: CSS position: sticky. The browser holds the hero in place as it
-      // scrolls, so it can't jump. The wrapper is made tall enough for the scroll.
+      // scrolls, so it can't jump. The wrapper is tall enough for the scroll. Both
+      // come with the server-rendered page, so it already works before the script.
       // Sticky fails inside an ancestor that clips or scrolls (overflow hidden/auto),
       // so then fall back to GSAP's pin.
-      const wrap = wrapRef.current as HTMLDivElement;
       const sticky = canStick(wrap);
-      wrap.style.setProperty("--tfh-steps", String(ws.length));
       wrap.classList.toggle("tfh-wrap--sticky", sticky);
       if (!sticky) {
         console.warn(
@@ -321,8 +337,8 @@ export default function TechFluentHero({
       return () => {
         alive = false;
         section.style.removeProperty("--tfh-word-em");
-        wrap.classList.remove("tfh-wrap--sticky");
-        wrap.style.removeProperty("--tfh-steps");
+        wrap.classList.add("tfh-wrap--sticky");
+        wrap.removeAttribute(READY_ATTR);
         mm.revert();
         document.documentElement.removeAttribute(PASSED_ATTR);
         seq.destroy();
@@ -334,7 +350,11 @@ export default function TechFluentHero({
   return (
     // The wrapper holds the scroll length; the <section> inside it stays on screen
     // (sticky, or pinned by GSAP as a fallback).
-    <div ref={wrapRef} className="tfh-wrap">
+    <div
+      ref={wrapRef}
+      className="tfh-wrap tfh-wrap--sticky"
+      style={{ "--tfh-steps": words.length } as CSSProperties}
+    >
       <section
         ref={sectionRef}
         className={`tfh${words.some((w) => isJoined(w.text)) ? " tfh--joined" : ""}${className ? ` ${className}` : ""}`}
@@ -352,7 +372,10 @@ export default function TechFluentHero({
 
           <div className="tfh-frame">
             <h1 className="tfh-kicker" id={titleId} dir="auto">
-              {kicker} <span ref={srRef} className="tfh-sr-only" />
+              {kicker}{" "}
+              <span ref={srRef} className="tfh-sr-only">
+                {words[0]?.text}
+              </span>
             </h1>
 
             <div className="tfh-words" aria-hidden="true">
@@ -378,7 +401,7 @@ export default function TechFluentHero({
 }
 ```
 
-2. In the <TechFluentHero /> on the home page, set assetsBase to "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero" (the images load from there; don't copy them into the project).
+2. In the <TechFluentHero /> on the home page, set assetsBase to "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.1/public/tech-fluent-hero" (the images load from there; don't copy them into the project).
 
 Then fix the page around the hero. The hero must start at the very top of the page:
 - Make the hero the first element inside <main>, with no padding, margin or spacer element above it. The header is fixed and floats over the hero, so it needs no space of its own.
@@ -399,5 +422,5 @@ The navbar sits 48px down on desktop only while it floats inside the hero card, 
 ```
 
 When you're done, tell me:
-1. The line count of each file (expected: TechFluentHero.tsx 373, frame-sequence.ts 144, tech-fluent-hero.css 292).
+1. The line count of each file (expected: TechFluentHero.tsx 396, frame-sequence.ts 144, tech-fluent-hero.css 298).
 2. Which elements around the hero you changed, and how.

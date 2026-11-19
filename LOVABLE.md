@@ -3,17 +3,29 @@
 A React version of `v2.html`'s hero (the card, glows, big word and spinning chair), for the Lovable project behind `ischool-new.lovable.app`.
 The site's own navbar stays. The hero leaves room for it, and tells it when the page has scrolled past the hero (see "The navbar").
 
-Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.2.0`)
+Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.2.1`)
 
-## Update Lovable to v1.2.0 (one message)
+## Update Lovable to v1.2.1 (one message)
 
-**From v1.1.1** (what the live site runs since the crash fix): paste `chat/update-v1.2.0.txt` into the Lovable chat. It tells Lovable to:
+**From v1.1.1 or v1.2.0**: paste `chat/update-v1.2.1.txt` into the Lovable chat. It tells Lovable to:
 
-1. Replace `TechFluentHero.tsx` (373 lines) and `tech-fluent-hero.css` (292 lines) with the `v1.2.0` versions. `frame-sequence.ts` didn't change.
-2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero`.
-3. Change the navbar so it's 48px from the top only while it's over the hero, and 16px everywhere else (see "The navbar" below).
+1. Replace `TechFluentHero.tsx` (396 lines) and `tech-fluent-hero.css` (298 lines) with the `v1.2.1` versions. `frame-sequence.ts` didn't change.
+2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.1/public/tech-fluent-hero`.
+3. Change the navbar so it's 48px from the top only while it's over the hero, and 16px everywhere else (see "The navbar" below). Lovable skips this if it already did it for v1.2.0.
 
 **Fresh install, or an older version:** paste `chat/update-from-github.txt`. It replaces all 3 files, sets `assetsBase`, removes any space and clipping around the hero, and sets up the navbar. If Lovable can't open the links, send `chat/update-fallback-1.txt`, wait for it to finish, then send `chat/update-fallback-2.txt`.
+
+### What changed in v1.2.1
+
+The page as the server sends it (what shows before the site's script loads, a few seconds on a first visit) now matches the page once the script runs:
+- **Only the first big word shows.** Before, both words showed on top of each other until the script hid the second one. The CSS hides every word after the first until the component sets `data-tfh-ready` on the wrapper.
+- **The hero already sticks.** The wrapper arrives with `tfh-wrap--sticky` and `--tfh-steps`, so scrolling before the script loads holds the hero in place, and the page doesn't jump when the script arrives. (If sticky can't work on the page, the script still switches to the JavaScript pin.)
+- **The heading is complete:** "Tech Fluent Generations" (or "التكنولوجيا لغة الأجيال") for search engines and screen readers, instead of just "Tech Fluent".
+- **Arabic starts at its final size.** `--tfh-word-em` defaults to 3.769 for Arabic ("المبدعين"), so the Arabic word doesn't change size when the script measures it.
+
+Tested by rendering the page on the server and opening it with no script: at 1440 × 789 and 390 × 844, in English and Arabic, only the first word shows, and every position and size matches the running page to within 0.2px.
+
+The chair stays empty until the script and the first image load, as before.
 
 ### What changed in v1.2.0
 
@@ -59,7 +71,7 @@ Already done on the live site. For a fresh install, paste `chat/arabic-page.txt`
 
 ```tsx
 <TechFluentHero
-  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.0/public/tech-fluent-hero"
+  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.1/public/tech-fluent-hero"
   kicker="التكنولوجيا لغة"
   words={[
     { text: "الأجيال", from: 0, rest: 0 },   // the girl
@@ -75,7 +87,7 @@ The site's earlier pattern, "أجيال تتحدث التكنولوجيا", does
 - With "تتحدث التكنولوجيا" on top, the line reads "technology speaks".
 - Its verb would have to change to "يتحدثون" for "مبدعون".
 
-**Tested** with this copy (RTL), v1.2.0, measured on the letters themselves (not their boxes), with the navbar at 48px from 1024px wide:
+**Tested** with this copy (RTL), v1.2.1, measured on the letters themselves (not their boxes), with the navbar at 48px from 1024px wide:
 
 | Size | Navbar → small line | Small line → big word | Big word | Head |
 |---|---|---|---|---|

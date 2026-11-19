@@ -36,6 +36,9 @@
   font-family: inherit;
   -webkit-font-smoothing: antialiased;
 }
+/* Arabic: "المبدعين" is 3.769em wide. The component measures the real words; this
+   only keeps the first paint (before the script) at the right size. */
+.tfh--joined { --tfh-word-em: 3.769; }
 /* From 1024px the site's navbar floats 48px down, inside the card. */
 @media (min-width: 1024px) {
   .tfh { --tfh-nav-bottom: 106px; }
@@ -173,6 +176,9 @@
   margin: -0.25em 0;
 }
 .tfh-ch { display: inline-block; white-space: pre; will-change: transform; }
+/* The server sends every word in place, on top of each other. Until the script
+   has hidden the others (it then sets data-tfh-ready), show only the first. */
+.tfh-wrap:not([data-tfh-ready]) .tfh-word ~ .tfh-word { visibility: hidden; }
 /* Arabic: whole words slide (letters must stay joined), no letter spacing, and a
    taller mask for the alef/hamza above and the descenders below. */
 .tfh-word--joined {
