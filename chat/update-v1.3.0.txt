@@ -1,0 +1,17 @@
+Update the hero from v1.2.1 to version v1.3.0 of https://github.com/Tobio-ux/tech-fluent-hero. On the Arabic page the kid's head covered the middle of the big word ("المبدعين" read as "المـدعين"), and while scrolling the boy briefly showed with the girl's long hair (a morph in the source video). This version moves the Arabic word above the head and skips those frames.
+
+1. Replace these 2 files in src/components/tech-fluent-hero/ with the v1.3.0 versions. Fetch each one from its URL and save its content exactly. Copy every file character for character. Do not edit, reformat, rename, split or "improve" it.
+- TechFluentHero.tsx (408 lines): https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.3.0/src/components/tech-fluent-hero/TechFluentHero.tsx
+- tech-fluent-hero.css (298 lines): https://raw.githubusercontent.com/Tobio-ux/tech-fluent-hero/v1.3.0/src/components/tech-fluent-hero/tech-fluent-hero.css
+frame-sequence.ts didn't change.
+
+2. Set assetsBase on <TechFluentHero /> (English and Arabic) to "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.3.0/public/tech-fluent-hero".
+
+3. Don't change the navbar, its site-header class or its CSS: they're already right.
+
+4. Publish, then check in a desktop window 1440 wide:
+- Arabic page: "الأجيال" and then "المبدعين" read in full above the kid's head; the head only touches the tails of the letters. "التكنولوجيا لغة" is still fully below the navbar.
+- Scroll slowly through the spin: the girl turns away, and when the chair's back faces you it switches straight to the boy. The boy never shows with long hair.
+- English page: unchanged.
+
+Tell me the line count of each file you replaced.

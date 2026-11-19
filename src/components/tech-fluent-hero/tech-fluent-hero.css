@@ -186,16 +186,16 @@
   padding: 0.4em 0.04em;
   margin: -0.4em 0;
 }
-/* Arabic on desktop. At the same size, Arabic ink is ~1.5× as tall as Latin:
-   the small line's descenders (ج ي غ) drop 0.24em and the big word's alef/hamza
-   rise 0.9em. So the big word is smaller (160) on the same baseline as
-   "Generations" (y 333, where the head covers the same share of the letters),
-   and the small line's letters end 17 above the word's, starting 28 higher than
-   in English (all in Figma px). */
+/* Arabic on desktop (all numbers in Figma px). Arabic letters are read on the
+   baseline (the dot under ب, the bowls of ع and ي), so the kid's head, which
+   tops out at y 286–292 in every frame, must stay below it: the big word (150)
+   sits on y 300, and the head only reaches its tails. Arabic ink is also ~1.5×
+   as tall as Latin (the small line's ج ي غ drop 0.24em, the word's hamza rises
+   0.9em), so the small line (54) ends 14 above the word and starts at y 98. */
 @media not all and (max-aspect-ratio: 3/2) {
-  .tfh--joined .tfh-card { --tfh-word-size: 160; --tfh-top: 113.5; }
-  .tfh--joined .tfh-kicker { top: calc(100 * var(--u)); }
-  .tfh--joined .tfh-words { top: calc(213 * var(--u)); }
+  .tfh--joined .tfh-card { --tfh-word-size: 150; --tfh-top: 98; }
+  .tfh--joined .tfh-kicker { top: calc(82 * var(--u)); font-size: calc(54 * var(--u)); }
+  .tfh--joined .tfh-words { top: calc(183 * var(--u)); }
 }
 
 /* Chair: 651.6 × 573.4 design px at x 371.9. 75.7% down the canvas (the shell
@@ -284,8 +284,8 @@
 @media (max-aspect-ratio: 3/2) {
   .tfh--joined .tfh-frame {
     --kicker-gap: calc(var(--word-size) * 0.45);
-    /* Arabic words are short, so the head would hide a bigger share of them. */
-    --overlap: 0.35;
+    /* The head only reaches the letters' tails, below the baseline (see desktop). */
+    --overlap: 0.22;
   }
 }
 @media (max-width: 640px) and (max-aspect-ratio: 3/2) {

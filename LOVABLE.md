@@ -3,17 +3,25 @@
 A React version of `v2.html`'s hero (the card, glows, big word and spinning chair), for the Lovable project behind `ischool-new.lovable.app`.
 The site's own navbar stays. The hero leaves room for it, and tells it when the page has scrolled past the hero (see "The navbar").
 
-Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.2.1`)
+Repository: https://github.com/Tobio-ux/tech-fluent-hero (current version `v1.3.0`)
 
-## Update Lovable to v1.2.1 (one message)
+## Update Lovable to v1.3.0 (one message)
 
-**From v1.1.1 or v1.2.0**: paste `chat/update-v1.2.1.txt` into the Lovable chat. It tells Lovable to:
+**From v1.2.1** (what the live site runs, with the navbar already set up): paste `chat/update-v1.3.0.txt` into the Lovable chat. It tells Lovable to:
 
-1. Replace `TechFluentHero.tsx` (396 lines) and `tech-fluent-hero.css` (298 lines) with the `v1.2.1` versions. `frame-sequence.ts` didn't change.
-2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.1/public/tech-fluent-hero`.
-3. Change the navbar so it's 48px from the top only while it's over the hero, and 16px everywhere else (see "The navbar" below). Lovable skips this if it already did it for v1.2.0.
+1. Replace `TechFluentHero.tsx` (408 lines) and `tech-fluent-hero.css` (298 lines) with the `v1.3.0` versions. `frame-sequence.ts` didn't change.
+2. Point `assetsBase` at `https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.3.0/public/tech-fluent-hero`.
+3. Leave the navbar and its CSS as they are.
 
 **Fresh install, or an older version:** paste `chat/update-from-github.txt`. It replaces all 3 files, sets `assetsBase`, removes any space and clipping around the hero, and sets up the navbar. If Lovable can't open the links, send `chat/update-fallback-1.txt`, wait for it to finish, then send `chat/update-fallback-2.txt`.
+
+### What changed in v1.3.0
+
+- **The kid's head no longer hides the Arabic word.** The head tops out at the same height in every frame (y 286–292 in Figma px), and in v1.2 it covered the lower half of the Arabic letters in the middle of the word. Arabic is read on the baseline (the dot under ب, the bowls of ع and ي), so "المبدعين" read as "المـدعين". Now:
+  - Desktop: the big word is 150 (was 160) and sits on y 300 (was 333), so the head reaches only the tails below the baseline. The small line is 54 (was 60) so it still fits under the navbar.
+  - Tablets: the head goes less far into the word (`--overlap` 0.22, was 0.35).
+  - English doesn't change: Latin letters read from their top half, and the head covers about a quarter of the word's height, as in Figma.
+- **The morph frames are skipped.** In frames 43–48 the source video turns the girl into the boy, and he shows with her long hair behind his headphones. Those frames are never drawn: the chair's back (frame 42) cuts straight to the boy (frame 49). That's the fastest part of the spin (each frame changes ~10× as much as at the start), so the cut doesn't stand out.
 
 ### What changed in v1.2.1
 
@@ -71,7 +79,7 @@ Already done on the live site. For a fresh install, paste `chat/arabic-page.txt`
 
 ```tsx
 <TechFluentHero
-  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.1/public/tech-fluent-hero"
+  assetsBase="https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.3.0/public/tech-fluent-hero"
   kicker="التكنولوجيا لغة"
   words={[
     { text: "الأجيال", from: 0, rest: 0 },   // the girl
@@ -87,16 +95,19 @@ The site's earlier pattern, "أجيال تتحدث التكنولوجيا", does
 - With "تتحدث التكنولوجيا" on top, the line reads "technology speaks".
 - Its verb would have to change to "يتحدثون" for "مبدعون".
 
-**Tested** with this copy (RTL), v1.2.1, measured on the letters themselves (not their boxes), with the navbar at 48px from 1024px wide:
+**Tested** with this copy (RTL), v1.3.0, measured on the letters themselves (not their boxes), with the navbar at 48px from 1024px wide. "Head" is how far the top of the head comes up above the big word's baseline, in either kid's frame:
 
 | Size | Navbar → small line | Small line → big word | Big word | Head |
 |---|---|---|---|---|
-| Laptop 1280 × 593 | 19px | 12px | 118px | In front of the word, as in English |
-| Laptop 1440 × 789 | 36px | 17px | 167px | In front of the word |
-| Desktop 1920 × 955 | 63px | 21px | 205px | In front of the word |
-| Tablet 768 × 1024 | 43px | 44px | 155px | In front of the word |
-| Tablet sideways 1024 × 768 | 38px | 51px | 182px | In front of the word |
-| Phone 390 × 844 | 129px | 22px | 77px | 15px below the word |
+| Laptop 1280 × 593 | 19px | 10px | 108px | 7px (0.07em): the tails only |
+| Laptop 1440 × 789 | 19px | 16px | 157px | 11px (0.07em) |
+| Laptop 1600 × 720 | 20px | 13px | 140px | 11px (0.08em) |
+| Desktop 1920 × 955 | 42px | 19px | 192px | 14px (0.07em) |
+| Tablet 768 × 1024 | 42px | 45px | 155px | Below the baseline |
+| Tablet sideways 1024 × 768 | 37px | 52px | 182px | 10px (0.06em) |
+| Phone 390 × 844 | 129px | 23px | 77px | 35px below the baseline |
+
+For comparison, in English the head comes up 0.24em (46px at 1440 × 789).
 
 Nothing is clipped, and the hidden word never shows. Screen readers read the whole sentence.
 

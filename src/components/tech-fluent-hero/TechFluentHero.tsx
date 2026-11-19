@@ -45,6 +45,18 @@ const SHEET_COLS = 5;
 const SHEET_ROWS = 4;
 const FRAME_SETS = { lg: { width: 750, height: 660 }, sm: { width: 440, height: 386 } };
 
+/**
+ * Frames 43–48 are where the source video morphs the girl into the boy: he has
+ * her long hair behind his headphones. They're never shown. The chair's back
+ * (42) cuts straight to the boy (49), in the fastest part of the spin.
+ */
+const MORPH = { from: 43, to: 48 };
+const frameToShow = (f: number) => {
+  const n = Math.round(f);
+  if (n < MORPH.from || n > MORPH.to) return n;
+  return n - (MORPH.from - 1) < MORPH.to + 1 - n ? MORPH.from - 1 : MORPH.to + 1;
+};
+
 const DEFAULT_WORDS: HeroWord[] = [
   { text: "Generations", from: 0, rest: 0 },
   { text: "Creators", from: 42, rest: 78 },
@@ -98,7 +110,7 @@ type Props = {
   /**
    * Folder that holds sheets/ and the glow SVGs. Default: the project's own
    * public/tech-fluent-hero/. Or the GitHub copy through jsDelivr:
-   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.2.1/public/tech-fluent-hero"
+   * "https://cdn.jsdelivr.net/gh/Tobio-ux/tech-fluent-hero@v1.3.0/public/tech-fluent-hero"
    */
   assetsBase?: string;
   /** Screen-reader description of the animation. */
@@ -246,7 +258,7 @@ export default function TechFluentHero({
       // ------------------------------------------------------- scroll timeline
       const state = { frame: 0 };
       const onFrame = () => {
-        seq.show(state.frame);
+        seq.show(frameToShow(state.frame));
         showWord(wordAt(Math.round(state.frame)));
       };
 
